@@ -3,7 +3,6 @@ import Filter from "./Filter"
 import { useState, useEffect } from 'react'
 import ShowList from "./ShowList.js"
 import axios from 'axios'
-import ShowWeather from "./Weather"
 
 const App = () => {
   const [search, setSearch] = useState('')

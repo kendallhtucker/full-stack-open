@@ -23,7 +23,7 @@ const ShowWeather = (props) => {
 return (
     <div>
         <p>temperature {weather.current.temp} Fahrenheit</p>
-        <img src={icon} width="100"></img>
+        <img src={icon} alt="" width="100"></img>
         <p>wind {weather.current.wind_speed} miles/hour</p>
     </div>
 )

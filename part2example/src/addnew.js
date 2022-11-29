@@ -5,7 +5,7 @@ const AddNew = (props) => {
     const [newNumber, setNewNumber] = useState('')
 
     // what happens on submit (name and number get added to array)
-    const addName = (event) => {
+    addName = event => {
         event.preventDefault()
         const nameObject = {
             name: newName,
