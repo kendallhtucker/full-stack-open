@@ -2,8 +2,6 @@
 const express = require('express')
 const app = express()
 
-app.use(express.json())
-
 let notes = [
     {
         id: 1,
@@ -24,6 +22,20 @@ let notes = [
         important: true
     }
 ]
+
+const requestLogger = (request, response, next) => {
+  console.log('Method:', request.method)
+  console.log('Path:  ', request.path)
+  console.log('Body:  ', request.body)
+  console.log('---')
+  next()
+}
+
+//middleware to read json
+app.use(express.json())
+
+//middleware to process requests from requestlogger
+app.use(requestLogger)
 
 app.get('/', (request, response) => {
     response.send('<h1>Hi Ginny!</h1>')
@@ -77,6 +89,13 @@ const generateId = () => {
   
     response.json(note)
   })
+
+  //middleware that checks for unknown endpoints being called by other middleware
+  const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+  }
+  
+  app.use(unknownEndpoint)
 
 const PORT = 3001
 app.listen(PORT)
