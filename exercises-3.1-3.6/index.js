@@ -2,9 +2,52 @@
 const express = require('express')
 var responseTime = require('response-time')
 
+//use json parser middleware
 const app = express()
-
 app.use(express.json())
+
+//install and use morgan middleware to track server requests
+var morgan = require('morgan')
+
+const morganLogger = morgan(function (tokens, req, res) {
+  //check if this is a post method
+  var type = tokens.method(req, res)
+  
+  //trying to get name and number
+  morgan.token('info', function (req) {
+    return [ 
+      req.body.name,
+      req.bodynumber
+    ]
+  })
+
+  app.use(morgan(':info'))
+
+  if (type === "POST") {
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms',
+      "name = ",
+      JSON.stringify(req.body.name),
+      "number = ",
+      JSON.stringify(req.body.number)
+    ].join(' ')
+
+  } else {
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms'
+    ].join(' ')
+  }
+})
+
+app.use(morganLogger)
 
 let persons = [
   {
