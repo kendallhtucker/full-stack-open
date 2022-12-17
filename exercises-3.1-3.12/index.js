@@ -1,0 +1,157 @@
+
+const express = require('express')
+var responseTime = require('response-time')
+
+//use json parser middleware
+const app = express()
+app.use(express.json())
+
+//middleware to allow requests from all origins
+const cors = require('cors')
+app.use(cors())
+
+//middeleware to show static content
+app.use(express.static('build'))
+
+//install and use morgan middleware to track server requests
+var morgan = require('morgan')
+
+const morganLogger = morgan(function (tokens, req, res) {
+  //check if this is a post method
+  var type = tokens.method(req, res)
+  
+  //trying to get name and number
+  morgan.token('info', function (req) {
+    return [ 
+      req.body.name,
+      req.bodynumber
+    ]
+  })
+
+  app.use(morgan(':info'))
+
+  if (type === "POST") {
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms',
+      "name = ",
+      JSON.stringify(req.body.name),
+      "number = ",
+      JSON.stringify(req.body.number)
+    ].join(' ')
+
+  } else {
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms'
+    ].join(' ')
+  }
+})
+
+app.use(morganLogger)
+
+let persons = [
+  {
+    "id": 1,
+    "name": "Arto Hellas",
+    "number": "040-123456"
+  },
+  {
+    "id": 2,
+    "name": "Ada Lovelace",
+    "number": "39-44-5323523"
+  },
+  {
+    "id": 3,
+    "name": "Dan Abramov",
+    "number": "12-43-234345"
+  },
+  {
+    "id": 4,
+    "name": "Mary Poppendieck",
+    "number": "39-23-6423122"
+  }
+]
+
+//random text on home page
+app.get('/', (request, response) => {
+  response.send('<h1>Hi Ginny!</h1>')
+})
+
+
+//get count of people in list + time count was requested
+app.get('/info', (request, response) => {
+  let count = persons.length
+  let time = new Date().toUTCString()
+  let string = "Phonebook has info for " + count + " people<br><br>" + time
+  response.send(string)
+})
+
+//get all people in list
+app.get('/api/persons', (request, response) => {
+  response.json(persons)
+})
+
+//get specific person in list
+app.get('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id)
+  const person = persons.find(person => person.id === id)
+  if (person) {
+    response.json(person)
+  } else {
+    response.status(404).end()
+  }
+})
+
+//delete person in list
+app.delete('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id)
+  persons = persons.filter(person => person.id !== id)
+
+  response.status(204).end()
+})
+
+//add person to list with random id
+const generateId = () => {
+  const maxId = Math.round(Math.random() * 1000)
+  return maxId
+}
+
+app.post('/api/persons', (request, response) => {
+  const body = request.body
+
+  if (!body.name) {
+    return response.status(400).json({
+      error: 'content missing'
+    })
+  } else if (!body.number) {
+    return response.status(400).json({
+      error: 'content missing'
+    })
+  } else if (persons.some(object => object.name === body.name)) {
+    return response.status(400).json({
+      error: 'name duplicate'
+    })
+  }
+
+  const person = {
+    id: generateId(),
+    name: body.name,
+    number: body.number
+  }
+
+  persons = persons.concat(person)
+
+  response.json(person)
+})
+
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
