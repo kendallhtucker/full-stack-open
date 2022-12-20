@@ -1,0 +1,9 @@
+POST http://localhost:3003/api/blogs
+content-type: application/json
+
+{
+    "title": "The Need to Read",
+    "author": "Paul Graham",
+    "url": "http://www.paulgraham.com/read.html",
+    "likes": 45
+}
